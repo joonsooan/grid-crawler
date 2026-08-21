@@ -17,4 +17,5 @@ MonoBehaviour:
   icon: {fileID: -5875898634008449712, guid: 3d40ad1e48d97cd4aaf83496d98c7fa9, type: 3}
   description: "\uD68D\uB4DD \uC2DC \uD574\uB2F9 \uD134\uC5D0 \uC774\uB3D9 \uAC70\uB9AC\uAC00
     \uC99D\uAC00\uD569\uB2C8\uB2E4."
-  healAmount: 10
+  healAmount: 0
+  moveRangeBonus: 3
