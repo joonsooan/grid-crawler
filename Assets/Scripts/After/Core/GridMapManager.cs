@@ -66,6 +66,12 @@ public class GridMapManager : MonoBehaviour
         return entityMap.TryGetValue(pos, out entity);
     }
 
+    // 그리드에 등록된 모든 엔티티 조회
+    public IEnumerable<MonoBehaviour> GetAllEntities()
+    {
+        return entityMap.Values;
+    }
+
     // 해당 칸에 아이템을 등록 (이동 차단 없이 상호작용만 가능)
     public void RegisterItem(Vector2Int pos, Item item)
     {
