@@ -20,7 +20,21 @@ public class GridMapManager : MonoBehaviour
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
 
-        // TODO: wallTilemap, waterTilemap을 순회하며 tileMap에 TileType(Wall/Water) 등록
+        RegisterTilemap(wallTilemap, TileType.Wall);
+        RegisterTilemap(waterTilemap, TileType.Water);
+    }
+
+    // 타일이 존재하는 칸을 순회하며 tileMap에 등록
+    private void RegisterTilemap(Tilemap tilemap, TileType type)
+    {
+        tilemap.CompressBounds();
+        BoundsInt bounds = tilemap.cellBounds;
+
+        foreach (Vector3Int cell in bounds.allPositionsWithin)
+        {
+            if (!tilemap.HasTile(cell)) continue;
+            tileMap[(Vector2Int)cell] = type;
+        }
     }
 
     // 해당 칸이 통행 가능한지 판정
