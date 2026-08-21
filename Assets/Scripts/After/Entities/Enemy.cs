@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Enemy : MonoBehaviour, IGridEntity, IDamageable
+public class Enemy : MonoBehaviour, IGridEntity, IDamageable, ITurnActor
 {
     [SerializeField] private EnemyDataSO enemyData;
 
