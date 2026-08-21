@@ -1,18 +1,23 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class PlayerController : MonoBehaviour, IGridEntity
+public class PlayerController : MonoBehaviour, IGridEntity, IDamageable
 {
+    [SerializeField] private PlayerDataSO playerData;
     public float moveCooldown = 0.1f;
-    public int attackPower = 10;
 
     public Vector2Int GridPos { get; set; }
+    public string PlayerName => playerData.playerName;
 
+    private int hp;
+    private int moveRange;
     private float lastMoveTime;
 
     // 시작 위치를 그리드에 맞춰 등록
     private void Start()
     {
+        hp = playerData.maxHp;
+        moveRange = playerData.moveRange;
         ((IGridEntity)this).RegisterToGrid(transform.position);
         transform.position = GridUtils.GridToWorld(GridPos, 0f);
     }
@@ -40,36 +45,71 @@ public class PlayerController : MonoBehaviour, IGridEntity
         lastMoveTime = Time.time;
     }
 
-    // 목표 칸의 점유자를 조회해 공격/상호작용을 먼저 판정, 비어 있으면 이동
+    // moveRange만큼 한 방향으로 이어서 진행, 첫 칸에 점유자가 있으면 공격/상호작용을 먼저 판정
+    // 이동 중 장애물이나 다른 점유자를 만나면 그 직전 칸까지만 이동
     private void TryMove(Vector2Int dir)
     {
-        Vector2Int targetPos = GridPos + dir;
+        Vector2Int destination = GridPos;
 
-        if (GridMapManager.Instance.TryGetEntity(targetPos, out MonoBehaviour other))
+        for (int step = 0; step < moveRange; step++)
         {
-            if (other.TryGetComponent<IDamageable>(out var damageable))
+            Vector2Int nextPos = destination + dir;
+
+            if (GridMapManager.Instance.TryGetEntity(nextPos, out MonoBehaviour other))
             {
-                damageable.TakeDamage(attackPower);
+                if (step > 0) break;
+
+                if (other.TryGetComponent<IDamageable>(out var damageable))
+                {
+                    damageable.TakeDamage(playerData.attackPower);
+                    return;
+                }
+
+                if (other.TryGetComponent<IInteractable>(out var interactable))
+                {
+                    interactable.Interact(gameObject);
+                    return;
+                }
+
+                Debug.Log("이동 불가");
                 return;
             }
 
-            if (other.TryGetComponent<IInteractable>(out var interactable))
+            if (!GridMapManager.Instance.IsWalkable(nextPos))
             {
-                interactable.Interact(gameObject);
-                return;
+                if (step == 0)
+                {
+                    Debug.Log("이동 불가");
+                    return;
+                }
+
+                break;
             }
 
-            Debug.Log("이동 불가");
-            return;
+            destination = nextPos;
         }
 
-        if (!GridMapManager.Instance.IsWalkable(targetPos))
-        {
-            Debug.Log("이동 불가");
-            return;
-        }
+        if (destination == GridPos) return;
 
-        ((IGridEntity)this).MoveOnGrid(targetPos);
+        ((IGridEntity)this).MoveOnGrid(destination);
         transform.position = GridUtils.GridToWorld(GridPos, transform.position.z);
+    }
+
+    // 이동 거리 증가 아이템 등, 즉시 적용되는 이동 범위 버프에 사용
+    public void IncreaseMoveRange(int amount)
+    {
+        moveRange += amount;
+        Debug.Log($"이동 거리 증가: {moveRange}칸");
+    }
+
+    public void TakeDamage(int damageAmount)
+    {
+        hp -= damageAmount;
+        Debug.Log($"{playerData.playerName} 남은 체력: {hp}");
+
+        if (hp <= 0)
+        {
+            Debug.Log($"{playerData.playerName} 사망");
+        }
     }
 }
