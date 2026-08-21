@@ -39,8 +39,7 @@ public class SpaghettiEnemy : MonoBehaviour, IGridEntity, IDamageable
     // 플레이어와 인접하면 공격, 아니면 moveRange 내에서 BFS로 접근
     public void ExecuteTurn(Vector2Int playerGridPos)
     {
-        int distToPlayer = Mathf.Abs(GridPos.x - playerGridPos.x) + Mathf.Abs(GridPos.y - playerGridPos.y);
-        if (distToPlayer == 1)
+        if (GridUtils.IsAdjacent(GridPos, playerGridPos))
         {
             AttackPlayer(playerGridPos);
             return;
@@ -103,6 +102,8 @@ public class SpaghettiEnemy : MonoBehaviour, IGridEntity, IDamageable
     // 플레이어 공격
     private void AttackPlayer(Vector2Int playerGridPos)
     {
+        if (!GridUtils.IsAdjacent(GridPos, playerGridPos)) return;
+
         if (GridMapManager.Instance.TryGetEntity(playerGridPos, out MonoBehaviour other)
             && other.TryGetComponent<IDamageable>(out var damageable))
         {

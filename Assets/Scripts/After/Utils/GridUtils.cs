@@ -13,4 +13,10 @@ public static class GridUtils
     {
         return new Vector3(gridPos.x + 0.5f, gridPos.y + 0.5f, z);
     }
+
+    // 두 좌표가 상하좌우로 인접한지 확인
+    public static bool IsAdjacent(Vector2Int a, Vector2Int b)
+    {
+        return Mathf.Abs(a.x - b.x) + Mathf.Abs(a.y - b.y) == 1;
+    }
 }

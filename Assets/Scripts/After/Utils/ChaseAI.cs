@@ -14,7 +14,7 @@ public static class ChaseAI
     public static Vector2Int FindNextPosition(Vector2Int start, Vector2Int target, int moveRange, out bool reachedAdjacent)
     {
         int startDist = Distance(start, target);
-        if (startDist == 1)
+        if (GridUtils.IsAdjacent(start, target))
         {
             reachedAdjacent = true;
             return start;
@@ -39,7 +39,7 @@ public static class ChaseAI
                 bestDist = dist;
             }
 
-            if (dist == 1)
+            if (GridUtils.IsAdjacent(current, target))
             {
                 reachedAdjacent = true;
                 return current;
