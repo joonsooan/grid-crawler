@@ -1,29 +1,32 @@
 using UnityEngine;
 
-public class SpaghettiChest : MonoBehaviour
+public class SpaghettiChest : MonoBehaviour, IGridEntity, IInteractable
 {
+    // 아이템 스탯
+    public string itemName = "휘발유";
+    public int healAmount = 0;
+
     public bool isOpened = false;
 
-    private Vector2Int gridPos;
+    public Vector2Int GridPos { get; set; }
 
     private void Start()
     {
-        gridPos = GridUtils.WorldToGrid(transform.position);
-        transform.position = GridUtils.GridToWorld(gridPos, transform.position.z);
-        GridMapManager.Instance.RegisterEntity(gridPos, this);
+        ((IGridEntity)this).RegisterToGrid(transform.position);
+        transform.position = GridUtils.GridToWorld(GridPos, 0f);
     }
 
     private void OnDestroy()
     {
-        GridMapManager.Instance.UnregisterEntity(gridPos);
+        ((IGridEntity)this).UnregisterFromGrid();
     }
 
-    public void Open()
+    public void Interact(GameObject interactor)
     {
         if (isOpened) return;
 
         isOpened = true;
-        Debug.Log($"아이템 획득");
+        Debug.Log($"{itemName} 획득");
         Destroy(gameObject);
     }
 }
