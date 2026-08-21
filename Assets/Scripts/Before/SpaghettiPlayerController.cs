@@ -68,7 +68,7 @@ public class SpaghettiPlayerController : MonoBehaviour
             SpaghettiChest chest = other.GetComponent<SpaghettiChest>();
             if (chest != null)
             {
-                chest.Open();
+                chest.Interact(gameObject);
             }
         }
     }
