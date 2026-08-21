@@ -8,7 +8,7 @@ public class GridOccupant : MonoBehaviour, IGridEntity
     private void Start()
     {
         ((IGridEntity)this).RegisterToGrid(transform.position);
-        transform.position = GridUtils.GridToWorld(GridPos, transform.position.z);
+        transform.position = GridUtils.GridToWorld(GridPos, 0f);
     }
 
     private void OnDestroy()
