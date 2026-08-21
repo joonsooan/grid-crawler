@@ -33,21 +33,23 @@ public class SpaghettiPlayerController : MonoBehaviour
         lastMoveTime = Time.time;
     }
 
-    // 목표 칸이 통행 가능하면 이동하고, GridMapManager의 점유 등록을 함께 갱신
+    // 목표 칸의 점유자를 조회해 공격/상호작용을 먼저 판정, 비어 있으면 이동
     private void TryMove(Vector2Int dir)
     {
         Vector2Int targetPos = gridPos + dir;
 
-        // 목표 칸에 무언가 있으면, 그게 무엇인지 일일이 확인해서 처리
         if (GridMapManager.Instance.TryGetEntity(targetPos, out MonoBehaviour other))
         {
-            if (other is SpaghettiEnemy enemy)
+            if (other.TryGetComponent<IDamageable>(out var damageable))
             {
-                enemy.TakeDamage(10);
+                damageable.TakeDamage(10);
+                return;
             }
-            else if (other is SpaghettiChest chest)
+
+            if (other.TryGetComponent<IInteractable>(out var interactable))
             {
-                chest.Open();
+                interactable.Interact(gameObject);
+                return;
             }
 
             return;
