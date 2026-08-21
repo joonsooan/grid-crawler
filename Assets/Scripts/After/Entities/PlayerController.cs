@@ -45,54 +45,42 @@ public class PlayerController : MonoBehaviour, IGridEntity, IDamageable
         lastMoveTime = Time.time;
     }
 
-    // moveRange만큼 한 방향으로 이어서 진행, 첫 칸에 점유자가 있으면 공격/상호작용을 먼저 판정
-    // 이동 중 장애물이나 다른 점유자를 만나면 그 직전 칸까지만 이동
+    // TODO: TurnManager 도입 시 이번 턴 남은 이동 칸수를 moveRange에서 차감하고, 0이 되면 정지
     private void TryMove(Vector2Int dir)
     {
-        Vector2Int destination = GridPos;
+        Vector2Int nextPos = GridPos + dir;
 
-        for (int step = 0; step < moveRange; step++)
+        if (GridMapManager.Instance.TryGetEntity(nextPos, out MonoBehaviour other))
         {
-            Vector2Int nextPos = destination + dir;
-
-            if (GridMapManager.Instance.TryGetEntity(nextPos, out MonoBehaviour other))
+            if (other.TryGetComponent<IDamageable>(out var damageable))
             {
-                if (step > 0) break;
-
-                if (other.TryGetComponent<IDamageable>(out var damageable))
-                {
-                    damageable.TakeDamage(playerData.attackPower);
-                    return;
-                }
-
-                if (other.TryGetComponent<IInteractable>(out var interactable))
-                {
-                    interactable.Interact(gameObject);
-                    return;
-                }
-
-                Debug.Log("이동 불가");
+                damageable.TakeDamage(playerData.attackPower);
                 return;
             }
 
-            if (!GridMapManager.Instance.IsWalkable(nextPos))
+            if (other.TryGetComponent<IInteractable>(out var interactable))
             {
-                if (step == 0)
-                {
-                    Debug.Log("이동 불가");
-                    return;
-                }
-
-                break;
+                interactable.Interact(gameObject);
+                return;
             }
 
-            destination = nextPos;
+            Debug.Log("이동 불가");
+            return;
         }
 
-        if (destination == GridPos) return;
+        if (!GridMapManager.Instance.IsWalkable(nextPos))
+        {
+            Debug.Log("이동 불가");
+            return;
+        }
 
-        ((IGridEntity)this).MoveOnGrid(destination);
-        transform.position = GridUtils.GridToWorld(GridPos, transform.position.z);
+        if (GridMapManager.Instance.TryGetItem(nextPos, out Item item))
+        {
+            item.Interact(gameObject);
+        }
+
+        ((IGridEntity)this).MoveOnGrid(nextPos);
+        transform.position = GridUtils.GridToWorld(GridPos, 0f);
     }
 
     // 이동 거리 증가 아이템 등, 즉시 적용되는 이동 범위 버프에 사용

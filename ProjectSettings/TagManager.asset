@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Enemy
   - Item
+  - Chest
   layers:
   - Default
   - TransparentFX
@@ -48,9 +49,6 @@ TagManager:
     locked: 0
   - name: Objects
     uniqueID: 2211602349
-    locked: 0
-  - name: Units
-    uniqueID: 1917874085
     locked: 0
   m_RenderingLayers:
   - Default
