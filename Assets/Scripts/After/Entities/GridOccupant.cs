@@ -1,19 +1,18 @@
 using UnityEngine;
 
 // 고정 유닛 테스트용 컴포넌트
-public class GridOccupant : MonoBehaviour
+public class GridOccupant : MonoBehaviour, IGridEntity
 {
-    private Vector2Int gridPos;
+    public Vector2Int GridPos { get; set; }
 
     private void Start()
     {
-        gridPos = GridUtils.WorldToGrid(transform.position);
-        transform.position = GridUtils.GridToWorld(gridPos, transform.position.z);
-        GridMapManager.Instance.RegisterEntity(gridPos, this);
+        ((IGridEntity)this).RegisterToGrid(transform.position);
+        transform.position = GridUtils.GridToWorld(GridPos, transform.position.z);
     }
 
     private void OnDestroy()
     {
-        GridMapManager.Instance.UnregisterEntity(gridPos);
+        ((IGridEntity)this).UnregisterFromGrid();
     }
 }
