@@ -63,12 +63,12 @@ public class SpaghettiPlayerController : MonoBehaviour
             }
         }
 
-        else if (other.CompareTag("Chest"))
+        else if (other.CompareTag("Item"))
         {
-            SpaghettiChest chest = other.GetComponent<SpaghettiChest>();
-            if (chest != null)
+            SpaghettiItem item = other.GetComponent<SpaghettiItem>();
+            if (item != null)
             {
-                chest.Interact(gameObject);
+                item.Interact(gameObject);
             }
         }
     }

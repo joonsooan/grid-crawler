@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class SpaghettiChest : MonoBehaviour, IGridEntity, IInteractable
+public class SpaghettiItem : MonoBehaviour, IGridEntity, IInteractable
 {
     // 아이템 스탯
     public string itemName = "휘발유";
