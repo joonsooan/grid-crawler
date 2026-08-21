@@ -48,6 +48,8 @@ public class Enemy : MonoBehaviour, IGridEntity, IDamageable
 
     private void AttackPlayer(Vector2Int playerGridPos)
     {
+        if (!GridUtils.IsAdjacent(GridPos, playerGridPos)) return;
+
         if (GridMapManager.Instance.TryGetEntity(playerGridPos, out MonoBehaviour other)
             && other.TryGetComponent<IDamageable>(out var damageable))
         {

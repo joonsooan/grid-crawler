@@ -10,9 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 6830961396905114443}
   - component: {fileID: 862322337143946439}
-  - component: {fileID: 8408639375948126185}
+  - component: {fileID: 4272010370395220626}
   m_Layer: 0
-  m_Name: Enemy Unit
+  m_Name: Enemy Unit_Turn
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -78,8 +78,8 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 1917874085
-  m_SortingLayer: 3
+  m_SortingLayerID: -2083364947
+  m_SortingLayer: 2
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: 7528343368144814110, guid: 3d40ad1e48d97cd4aaf83496d98c7fa9, type: 3}
@@ -92,7 +92,7 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!114 &8408639375948126185
+--- !u!114 &4272010370395220626
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -101,9 +101,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1781313813474160183}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a9ee53c121688924893a294f1a23f385, type: 3}
+  m_Script: {fileID: 11500000, guid: 0c325b7cee0404c438cb5a6ecf4cc70b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SpaghettiEnemy
+  m_EditorClassIdentifier: Assembly-CSharp::SpaghettiTurnEnemy
+  moveCooldown: 0.5
   maxHp: 30
   attackPower: 5
-  moveRange: 3
+  moveRange: 1
+  player: {fileID: 0}

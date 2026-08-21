@@ -52,7 +52,7 @@ public class PlayerController : MonoBehaviour, IGridEntity, IDamageable
 
         if (GridMapManager.Instance.TryGetEntity(nextPos, out MonoBehaviour other))
         {
-            if (other.TryGetComponent<IDamageable>(out var damageable))
+            if (GridUtils.IsAdjacent(GridPos, nextPos) && other.TryGetComponent<IDamageable>(out var damageable))
             {
                 damageable.TakeDamage(playerData.attackPower);
                 return;
