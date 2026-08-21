@@ -10,6 +10,7 @@ public class TurnManager : MonoBehaviour
     public static TurnManager Instance { get; private set; }
 
     [SerializeField] private float enemyStepInterval = 0.5f;
+    [SerializeField] private float enemyToEnemyDelay = 0.3f;
     [SerializeField] private float turnTransitionDelay = 0.5f;
 
     public TurnState CurrentState { get; private set; } = TurnState.WaitingForPlayer;
@@ -67,6 +68,7 @@ public class TurnManager : MonoBehaviour
             if (entity != null && entity is ITurnActor actor)
             {
                 yield return StartCoroutine(actor.ExecuteTurnCoroutine(enemyStepInterval));
+                yield return new WaitForSeconds(enemyToEnemyDelay);
             }
         }
 
