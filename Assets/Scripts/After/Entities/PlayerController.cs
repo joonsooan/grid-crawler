@@ -13,9 +13,7 @@ public class PlayerController : MonoBehaviour, IGridEntity, IDamageable
 
     private int hp;
     private int moveRange;
-    private int movesRemaining;
     private float lastMoveTime;
-    private enum ActionResult { Blocked, Moved, TurnEnd }
 
     private void Awake()
     {
@@ -28,7 +26,6 @@ public class PlayerController : MonoBehaviour, IGridEntity, IDamageable
     {
         hp = playerData.maxHp;
         moveRange = playerData.moveRange;
-        movesRemaining = moveRange;
         ((IGridEntity)this).RegisterToGrid(transform.position);
         transform.position = GridUtils.GridToWorld(GridPos, 0f);
     }
@@ -48,17 +45,8 @@ public class PlayerController : MonoBehaviour, IGridEntity, IDamageable
         if (dir == Vector2Int.zero) return;
 
         lastMoveTime = Time.time;
-        ResolveAction(TryMove(dir));
-    }
-
-    // 공격/상호작용은 즉시 턴 종료, 이동은 movesRemaining이 남아있는 동안 턴 유지
-    private void ResolveAction(ActionResult result)
-    {
-        if (result == ActionResult.Blocked) return;
-        if (result == ActionResult.Moved && --movesRemaining > 0) return;
-
-        movesRemaining = moveRange;
-        TurnManager.Instance.OnPlayerActionCompleted();
+        TurnManager.Instance.OnPlayerActionStarted(moveRange);
+        TurnManager.Instance.ResolvePlayerAction(TryMove(dir));
     }
 
     private static Vector2Int GetInputDirection()
@@ -73,8 +61,7 @@ public class PlayerController : MonoBehaviour, IGridEntity, IDamageable
         return Vector2Int.zero;
     }
 
-
-    private ActionResult TryMove(Vector2Int dir)
+    private PlayerActionResult TryMove(Vector2Int dir)
     {
         Vector2Int nextPos = GridPos + dir;
 
@@ -83,23 +70,23 @@ public class PlayerController : MonoBehaviour, IGridEntity, IDamageable
             if (GridUtils.IsAdjacent(GridPos, nextPos) && other.TryGetComponent<IDamageable>(out var damageable))
             {
                 damageable.TakeDamage(playerData.attackPower);
-                return ActionResult.TurnEnd;
+                return PlayerActionResult.TurnEnd;
             }
 
             if (other.TryGetComponent<IInteractable>(out var interactable))
             {
                 interactable.Interact(gameObject);
-                return ActionResult.TurnEnd;
+                return PlayerActionResult.TurnEnd;
             }
 
             Debug.Log("이동 불가");
-            return ActionResult.Blocked;
+            return PlayerActionResult.Blocked;
         }
 
         if (!GridMapManager.Instance.IsWalkable(nextPos))
         {
             Debug.Log("이동 불가");
-            return ActionResult.Blocked;
+            return PlayerActionResult.Blocked;
         }
 
         if (GridMapManager.Instance.TryGetItem(nextPos, out Item item))
@@ -109,7 +96,7 @@ public class PlayerController : MonoBehaviour, IGridEntity, IDamageable
 
         ((IGridEntity)this).MoveOnGrid(nextPos);
         transform.position = GridUtils.GridToWorld(GridPos, 0f);
-        return ActionResult.Moved;
+        return PlayerActionResult.Moved;
     }
 
     // 이동 거리 증가 아이템 등, 즉시 적용되는 이동 범위 버프에 사용

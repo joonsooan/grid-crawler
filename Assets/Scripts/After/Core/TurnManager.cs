@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public enum TurnState { WaitingForPlayer, ProcessingPlayerTurn, ProcessingEnemyTurn, TurnResolve }
+public enum PlayerActionResult { Blocked, Moved, TurnEnd }
 
 public class TurnManager : MonoBehaviour
 {
@@ -13,13 +14,41 @@ public class TurnManager : MonoBehaviour
 
     public TurnState CurrentState { get; private set; } = TurnState.WaitingForPlayer;
 
+    private int movesRemaining;
+
     private void Awake()
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
     }
 
-    public void OnPlayerActionCompleted()
+    // 플레이어 입력 시점에 호출
+    public void OnPlayerActionStarted(int moveRange)
+    {
+        if (movesRemaining <= 0) movesRemaining = moveRange;
+        CurrentState = TurnState.ProcessingPlayerTurn;
+    }
+
+    // 턴을 넘길지, 같은 턴을 유지할지 판단
+    public void ResolvePlayerAction(PlayerActionResult result)
+    {
+        if (result == PlayerActionResult.Blocked)
+        {
+            CurrentState = TurnState.WaitingForPlayer;
+            return;
+        }
+
+        if (result == PlayerActionResult.Moved && --movesRemaining > 0)
+        {
+            CurrentState = TurnState.WaitingForPlayer;
+            return;
+        }
+
+        movesRemaining = 0;
+        OnPlayerActionCompleted();
+    }
+
+    private void OnPlayerActionCompleted()
     {
         CurrentState = TurnState.ProcessingEnemyTurn;
         StartCoroutine(ProcessEnemyTurnsCoroutine());
@@ -29,15 +58,15 @@ public class TurnManager : MonoBehaviour
     {
         yield return new WaitForSeconds(turnTransitionDelay);
 
-        Queue<MonoBehaviour> turnQueue = new Queue<MonoBehaviour>(FindObjectsByType<Enemy>(FindObjectsSortMode.None));
+        Queue<MonoBehaviour> turnQueue = new Queue<MonoBehaviour>(GridMapManager.Instance.GetAllEntities());
 
         while (turnQueue.Count > 0)
         {
             MonoBehaviour entity = turnQueue.Dequeue();
 
-            if (entity != null && entity is Enemy enemy)
+            if (entity != null && entity is ITurnActor actor)
             {
-                yield return StartCoroutine(enemy.ExecuteTurnCoroutine(enemyStepInterval));
+                yield return StartCoroutine(actor.ExecuteTurnCoroutine(enemyStepInterval));
             }
         }
 
