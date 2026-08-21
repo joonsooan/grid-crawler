@@ -151,4 +151,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a9ee53c121688924893a294f1a23f385, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpaghettiEnemy
-  hp: 20
+  maxHp: 30
+  attackPower: 5
+  moveRange: 3
