@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour, IGridEntity, IDamageable
@@ -32,31 +34,26 @@ public class Enemy : MonoBehaviour, IGridEntity, IDamageable
         }
     }
 
-    // ChaseAI로 계산한 칸까지 이동, 플레이어와 인접해졌다면 이어서 공격
-    public void ExecuteTurn(Vector2Int playerGridPos)
+    // 계산한 경로를 한 칸씩 이동, 플레이어와 인접해졌다면 공격
+    public IEnumerator ExecuteTurnCoroutine(float stepInterval)
     {
-        Vector2Int destination = ChaseAI.FindNextPosition(GridPos, playerGridPos, enemyData.moveRange, out bool reachedAdjacent);
+        List<Vector2Int> path = ChaseAI.FindPath(GridPos, PlayerController.Instance.GridPos, enemyData.moveRange, out bool reachedAdjacent);
 
-        if (destination != GridPos)
+        foreach (Vector2Int step in path)
         {
-            ((IGridEntity)this).MoveOnGrid(destination);
+            ((IGridEntity)this).MoveOnGrid(step);
             transform.position = GridUtils.GridToWorld(GridPos, 0f);
+            yield return new WaitForSeconds(stepInterval);
         }
 
-        if (reachedAdjacent) AttackPlayer(playerGridPos);
+        if (reachedAdjacent) AttackPlayer();
     }
 
-    private void AttackPlayer(Vector2Int playerGridPos)
+    private void AttackPlayer()
     {
-        if (!GridUtils.IsAdjacent(GridPos, playerGridPos)) return;
+        if (!GridUtils.IsAdjacent(GridPos, PlayerController.Instance.GridPos)) return;
 
-        if (GridMapManager.Instance.TryGetEntity(playerGridPos, out MonoBehaviour other)
-            && other.TryGetComponent<IDamageable>(out var damageable))
-        {
-            damageable.TakeDamage(enemyData.attackPower);
-
-            string playerName = other.TryGetComponent<PlayerController>(out var player) ? player.PlayerName : "플레이어";
-            Debug.Log($"{enemyData.enemyName}이(가) {playerName}을(를) 공격, 데미지: {enemyData.attackPower}");
-        }
+        PlayerController.Instance.TakeDamage(enemyData.attackPower);
+        Debug.Log($"{enemyData.enemyName}이(가) {PlayerController.Instance.PlayerName}을(를) 공격, 데미지: {enemyData.attackPower}");
     }
 }

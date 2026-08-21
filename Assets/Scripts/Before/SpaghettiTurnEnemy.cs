@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 // 몬스터 전용: 플레이어의 행동과 무관하게 자기 Update()의 쿨다운 타이머로만 추적/공격 -> 여러 마리가 동시에, 제멋대로 동작
@@ -46,11 +47,12 @@ public class SpaghettiTurnEnemy : MonoBehaviour, IGridEntity, IDamageable
         if (player == null) return;
 
         Vector2Int playerGridPos = GridUtils.WorldToGrid(player.position);
-        Vector2Int destination = ChaseAI.FindNextPosition(GridPos, playerGridPos, moveRange, out bool reachedAdjacent);
+        List<Vector2Int> path = ChaseAI.FindPath(GridPos, playerGridPos, moveRange, out bool reachedAdjacent);
 
-        if (destination != GridPos)
+        // moveRange 내에서 계산한 경로 전체를 한 번에 쓰지 않고, 매 Update 틱마다 한 칸만 이동 -> 자연스럽게 한 칸씩 움직이는 것처럼 보임
+        if (path.Count > 0)
         {
-            ((IGridEntity)this).MoveOnGrid(destination);
+            ((IGridEntity)this).MoveOnGrid(path[0]);
             transform.position = GridUtils.GridToWorld(GridPos, 0f);
         }
 
