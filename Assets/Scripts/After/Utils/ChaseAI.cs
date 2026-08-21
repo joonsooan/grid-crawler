@@ -9,23 +9,23 @@ public static class ChaseAI
         Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right
     };
 
-    // start에서 target과 인접한 칸까지 도달 가능한 다음 위치를 반환
-    // moveRange 내에 인접한 칸에 닿지 못하면 갈 수 있는 칸 중 target과 가장 가까운 칸을 반환
-    public static Vector2Int FindNextPosition(Vector2Int start, Vector2Int target, int moveRange, out bool reachedAdjacent)
+    // start에서 target과 인접한 칸까지 도달 가능한 경로 반환
+    // moveRange 내에 인접한 칸에 닿지 못하면 갈 수 있는 칸 중 target과 가장 가까운 칸까지의 경로를 반환
+    public static List<Vector2Int> FindPath(Vector2Int start, Vector2Int target, int moveRange, out bool reachedAdjacent)
     {
-        int startDist = Distance(start, target);
         if (GridUtils.IsAdjacent(start, target))
         {
             reachedAdjacent = true;
-            return start;
+            return new List<Vector2Int>();
         }
 
+        Dictionary<Vector2Int, Vector2Int> parent = new Dictionary<Vector2Int, Vector2Int>();
         Dictionary<Vector2Int, int> depth = new Dictionary<Vector2Int, int> { [start] = 0 };
         Queue<Vector2Int> queue = new Queue<Vector2Int>();
         queue.Enqueue(start);
 
         Vector2Int best = start;
-        int bestDist = startDist;
+        int bestDist = Distance(start, target);
 
         while (queue.Count > 0)
         {
@@ -42,7 +42,7 @@ public static class ChaseAI
             if (GridUtils.IsAdjacent(current, target))
             {
                 reachedAdjacent = true;
-                return current;
+                return BuildPath(parent, start, current);
             }
 
             if (currentDepth >= moveRange) continue;
@@ -54,12 +54,28 @@ public static class ChaseAI
                 if (!GridMapManager.Instance.IsWalkable(next)) continue;
 
                 depth[next] = currentDepth + 1;
+                parent[next] = current;
                 queue.Enqueue(next);
             }
         }
 
         reachedAdjacent = false;
-        return best;
+        return BuildPath(parent, start, best);
+    }
+
+    private static List<Vector2Int> BuildPath(Dictionary<Vector2Int, Vector2Int> parent, Vector2Int start, Vector2Int end)
+    {
+        List<Vector2Int> path = new List<Vector2Int>();
+        Vector2Int current = end;
+
+        while (current != start)
+        {
+            path.Add(current);
+            current = parent[current];
+        }
+
+        path.Reverse();
+        return path;
     }
 
     private static int Distance(Vector2Int a, Vector2Int b)
