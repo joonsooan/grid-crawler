@@ -40,7 +40,7 @@ public class Enemy : MonoBehaviour, IGridEntity, IDamageable
         if (destination != GridPos)
         {
             ((IGridEntity)this).MoveOnGrid(destination);
-            transform.position = GridUtils.GridToWorld(GridPos, transform.position.z);
+            transform.position = GridUtils.GridToWorld(GridPos, 0f);
         }
 
         if (reachedAdjacent) AttackPlayer(playerGridPos);
