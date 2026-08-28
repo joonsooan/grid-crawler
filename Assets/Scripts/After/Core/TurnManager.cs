@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -15,7 +16,11 @@ public class TurnManager : MonoBehaviour
 
     public TurnState CurrentState { get; private set; } = TurnState.WaitingForPlayer;
 
+    public event Action<TurnState> OnTurnStateChanged;
+    public event Action<int, int> OnMovesRemainingChanged;
+
     private int movesRemaining;
+    private int maxMoves;
 
     private void Awake()
     {
@@ -26,8 +31,14 @@ public class TurnManager : MonoBehaviour
     // 플레이어 입력 시점에 호출
     public void OnPlayerActionStarted(int moveRange)
     {
-        if (movesRemaining <= 0) movesRemaining = moveRange;
-        CurrentState = TurnState.ProcessingPlayerTurn;
+        if (movesRemaining <= 0)
+        {
+            maxMoves = moveRange;
+            movesRemaining = moveRange;
+            OnMovesRemainingChanged?.Invoke(movesRemaining, maxMoves);
+        }
+
+        SetState(TurnState.ProcessingPlayerTurn);
     }
 
     // 턴을 넘길지, 같은 턴을 유지할지 판단
@@ -35,23 +46,30 @@ public class TurnManager : MonoBehaviour
     {
         if (result == PlayerActionResult.Blocked)
         {
-            CurrentState = TurnState.WaitingForPlayer;
+            SetState(TurnState.WaitingForPlayer);
             return;
         }
 
-        if (result == PlayerActionResult.Moved && --movesRemaining > 0)
+        if (result == PlayerActionResult.Moved)
         {
-            CurrentState = TurnState.WaitingForPlayer;
-            return;
+            movesRemaining--;
+            OnMovesRemainingChanged?.Invoke(movesRemaining, maxMoves);
+
+            if (movesRemaining > 0)
+            {
+                SetState(TurnState.WaitingForPlayer);
+                return;
+            }
         }
 
         movesRemaining = 0;
+        OnMovesRemainingChanged?.Invoke(movesRemaining, maxMoves);
         OnPlayerActionCompleted();
     }
 
     private void OnPlayerActionCompleted()
     {
-        CurrentState = TurnState.ProcessingEnemyTurn;
+        SetState(TurnState.ProcessingEnemyTurn);
         StartCoroutine(ProcessEnemyTurnsCoroutine());
     }
 
@@ -67,15 +85,29 @@ public class TurnManager : MonoBehaviour
 
             if (entity != null && entity is ITurnActor actor)
             {
-                yield return StartCoroutine(actor.ExecuteTurnCoroutine(enemyStepInterval));
+                yield return StartCoroutine(actor.ExecuteTurnCoroutine(enemyStepInterval, RelayMovesRemaining));
                 yield return new WaitForSeconds(enemyToEnemyDelay);
             }
         }
 
         yield return new WaitForSeconds(turnTransitionDelay);
 
-        CurrentState = TurnState.TurnResolve;
-        // TODO: 턴 종료 후 처리 (상태 효과, 턴 카운트 증가 등)
-        CurrentState = TurnState.WaitingForPlayer;
+        SetState(TurnState.TurnResolve);
+        // TODO: 턴 종료 후 처리 (추가 상태 효과 등)
+        SetState(TurnState.WaitingForPlayer);
+
+        movesRemaining = maxMoves;
+        OnMovesRemainingChanged?.Invoke(movesRemaining, maxMoves);
+    }
+
+    private void RelayMovesRemaining(int current, int max)
+    {
+        OnMovesRemainingChanged?.Invoke(current, max);
+    }
+
+    private void SetState(TurnState state)
+    {
+        CurrentState = state;
+        OnTurnStateChanged?.Invoke(state);
     }
 }
