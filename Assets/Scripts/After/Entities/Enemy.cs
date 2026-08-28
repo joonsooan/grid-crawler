@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -35,14 +36,21 @@ public class Enemy : MonoBehaviour, IGridEntity, IDamageable, ITurnActor
     }
 
     // 계산한 경로를 한 칸씩 이동, 플레이어와 인접해졌다면 공격
-    public IEnumerator ExecuteTurnCoroutine(float stepInterval)
+    public IEnumerator ExecuteTurnCoroutine(float stepInterval, Action<int, int> onMovesRemainingChanged)
     {
         List<Vector2Int> path = ChaseAI.FindPath(GridPos, PlayerController.Instance.GridPos, enemyData.moveRange, out bool reachedAdjacent);
+
+        int totalSteps = path.Count;
+        int stepsRemaining = totalSteps;
+        onMovesRemainingChanged?.Invoke(stepsRemaining, totalSteps);
 
         foreach (Vector2Int step in path)
         {
             ((IGridEntity)this).MoveOnGrid(step);
             transform.position = GridUtils.GridToWorld(GridPos, 0f);
+            stepsRemaining--;
+            onMovesRemainingChanged?.Invoke(stepsRemaining, totalSteps);
+
             yield return new WaitForSeconds(stepInterval);
         }
 

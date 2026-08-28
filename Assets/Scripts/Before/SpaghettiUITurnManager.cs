@@ -96,7 +96,7 @@ public class SpaghettiUITurnManager : MonoBehaviour
 
             if (entity != null && entity is ITurnActor actor)
             {
-                yield return StartCoroutine(actor.ExecuteTurnCoroutine(enemyStepInterval));
+                yield return StartCoroutine(actor.ExecuteTurnCoroutine(enemyStepInterval, null));
 
                 turnStateText.text = ">> 적 턴 <<";
                 movesRemainingText.text = "남은 이동 : 3 / 3";
