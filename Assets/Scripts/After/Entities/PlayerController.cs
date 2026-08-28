@@ -28,6 +28,7 @@ public class PlayerController : MonoBehaviour, IGridEntity, IDamageable
         moveRange = playerData.moveRange;
         ((IGridEntity)this).RegisterToGrid(transform.position);
         transform.position = GridUtils.GridToWorld(GridPos, 0f);
+        TurnManager.Instance.InitializePlayerMoves(moveRange);
     }
 
     private void OnDestroy()
