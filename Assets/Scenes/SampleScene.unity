@@ -2345,6 +2345,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TurnStateUI
   turnStateText: {fileID: 1604931892}
+  slideDistance: 20
+  slideDuration: 0.3
 --- !u!114 &1618986742
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2358,6 +2360,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HealthUI
   healthText: {fileID: 1770096380}
+  punchDuration: 0.2
+  punchScaleAmount: 0.1
+  flashDuration: 0.2
 --- !u!1 &1674916073
 GameObject:
   m_ObjectHideFlags: 0
