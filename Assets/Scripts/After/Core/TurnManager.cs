@@ -19,6 +19,11 @@ public class TurnManager : MonoBehaviour
     public event Action<TurnState> OnTurnStateChanged;
     public event Action<int, int> OnMovesRemainingChanged;
 
+    public int MovesRemaining => movesRemaining;
+    public int MaxMoves => maxMoves;
+
+    public const int TransitionMoves = -1;
+
     private int movesRemaining;
     private int maxMoves;
 
@@ -26,6 +31,13 @@ public class TurnManager : MonoBehaviour
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
+    }
+
+    public void InitializePlayerMoves(int moveRange)
+    {
+        maxMoves = moveRange;
+        movesRemaining = moveRange;
+        OnMovesRemainingChanged?.Invoke(movesRemaining, maxMoves);
     }
 
     // 플레이어 입력 시점에 호출
@@ -75,6 +87,7 @@ public class TurnManager : MonoBehaviour
 
     private IEnumerator ProcessEnemyTurnsCoroutine()
     {
+        OnMovesRemainingChanged?.Invoke(TransitionMoves, TransitionMoves);
         yield return new WaitForSeconds(turnTransitionDelay);
 
         Queue<MonoBehaviour> turnQueue = new Queue<MonoBehaviour>(GridMapManager.Instance.GetAllEntities());
@@ -90,6 +103,7 @@ public class TurnManager : MonoBehaviour
             }
         }
 
+        OnMovesRemainingChanged?.Invoke(TransitionMoves, TransitionMoves);
         yield return new WaitForSeconds(turnTransitionDelay);
 
         SetState(TurnState.TurnResolve);

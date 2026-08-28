@@ -5,13 +5,13 @@ public class TurnStateUI : MonoBehaviour
 {
     [SerializeField] private TMP_Text turnStateText;
 
-    private void OnEnable()
+    private void Start()
     {
         TurnManager.Instance.OnTurnStateChanged += Refresh;
         Refresh(TurnManager.Instance.CurrentState);
     }
 
-    private void OnDisable()
+    private void OnDestroy()
     {
         TurnManager.Instance.OnTurnStateChanged -= Refresh;
     }

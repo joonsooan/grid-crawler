@@ -259,8 +259,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TurnManager
   enemyStepInterval: 0.5
-  enemyToEnemyDelay: 0.3
-  turnTransitionDelay: 0.5
+  enemyToEnemyDelay: 0.5
+  turnTransitionDelay: 1
 --- !u!1 &367988637
 GameObject:
   m_ObjectHideFlags: 0
