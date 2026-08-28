@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -39,7 +40,7 @@ public class SpaghettiUIEnemy : MonoBehaviour, IGridEntity, IDamageable, ITurnAc
     }
 
     // 계산한 경로를 한 칸씩 이동, 플레이어와 인접해졌다면 공격
-    public IEnumerator ExecuteTurnCoroutine(float stepInterval)
+    public IEnumerator ExecuteTurnCoroutine(float stepInterval, Action<int, int> onMovesRemainingChanged)
     {
         List<Vector2Int> path = ChaseAI.FindPath(GridPos, SpaghettiUIPlayerController.Instance.GridPos, enemyData.moveRange, out bool reachedAdjacent);
 
