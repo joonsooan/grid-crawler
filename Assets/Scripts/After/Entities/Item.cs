@@ -27,9 +27,10 @@ public class Item : MonoBehaviour, IInteractable
         isOpened = true;
         Debug.Log($"{itemData.itemName} 획득");
 
-        if (itemData.moveRangeBonus > 0 && interactor.TryGetComponent<PlayerController>(out var player))
+        if (interactor.TryGetComponent<PlayerController>(out var player))
         {
-            player.IncreaseMoveRange(itemData.moveRangeBonus);
+            if (itemData.moveRangeBonus > 0) player.IncreaseMoveRange(itemData.moveRangeBonus);
+            if (itemData.healAmount > 0) player.Heal(itemData.healAmount);
         }
 
         Destroy(gameObject);

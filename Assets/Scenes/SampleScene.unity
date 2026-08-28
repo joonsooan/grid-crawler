@@ -2251,6 +2251,7 @@ GameObject:
   - component: {fileID: 1618986738}
   - component: {fileID: 1618986741}
   - component: {fileID: 1618986740}
+  - component: {fileID: 1618986742}
   m_Layer: 5
   m_Name: Main Panel
   m_TagString: Untagged
@@ -2344,6 +2345,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TurnStateUI
   turnStateText: {fileID: 1604931892}
+--- !u!114 &1618986742
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1618986736}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: be24dbbf2b4382041841670949c30594, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HealthUI
+  healthText: {fileID: 1770096380}
 --- !u!1 &1674916073
 GameObject:
   m_ObjectHideFlags: 0

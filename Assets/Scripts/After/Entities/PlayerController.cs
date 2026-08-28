@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -10,6 +11,9 @@ public class PlayerController : MonoBehaviour, IGridEntity, IDamageable
 
     public Vector2Int GridPos { get; set; }
     public string PlayerName => playerData.playerName;
+    public int MoveRange => moveRange;
+
+    public event Action<int, int> OnHealthChanged;
 
     private int hp;
     private int moveRange;
@@ -29,6 +33,7 @@ public class PlayerController : MonoBehaviour, IGridEntity, IDamageable
         ((IGridEntity)this).RegisterToGrid(transform.position);
         transform.position = GridUtils.GridToWorld(GridPos, 0f);
         TurnManager.Instance.InitializePlayerMoves(moveRange);
+        OnHealthChanged?.Invoke(hp, playerData.maxHp);
     }
 
     private void OnDestroy()
@@ -103,14 +108,22 @@ public class PlayerController : MonoBehaviour, IGridEntity, IDamageable
     // 이동 거리 증가 아이템 등, 즉시 적용되는 이동 범위 버프에 사용
     public void IncreaseMoveRange(int amount)
     {
-        moveRange += amount;
-        Debug.Log($"이동 거리 증가: {moveRange}칸");
+        TurnManager.Instance.IncreaseMovesRemaining(amount);
+        Debug.Log($"이동 거리: {amount}칸 증가");
+    }
+
+    public void Heal(int amount)
+    {
+        hp = Mathf.Min(hp + amount, playerData.maxHp);
+        Debug.Log($"{playerData.playerName} 체력 {amount} 회복");
+        OnHealthChanged?.Invoke(hp, playerData.maxHp);
     }
 
     public void TakeDamage(int damageAmount)
     {
         hp -= damageAmount;
         Debug.Log($"{playerData.playerName} 남은 체력: {hp}");
+        OnHealthChanged?.Invoke(hp, playerData.maxHp);
 
         if (hp <= 0)
         {

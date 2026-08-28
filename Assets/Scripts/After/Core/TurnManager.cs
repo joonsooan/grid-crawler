@@ -40,6 +40,12 @@ public class TurnManager : MonoBehaviour
         OnMovesRemainingChanged?.Invoke(movesRemaining, maxMoves);
     }
 
+    public void IncreaseMovesRemaining(int amount)
+    {
+        movesRemaining = Mathf.Min(movesRemaining + amount, maxMoves);
+        OnMovesRemainingChanged?.Invoke(movesRemaining, maxMoves);
+    }
+
     // 플레이어 입력 시점에 호출
     public void OnPlayerActionStarted(int moveRange)
     {
@@ -110,6 +116,7 @@ public class TurnManager : MonoBehaviour
         // TODO: 턴 종료 후 처리 (추가 상태 효과 등)
         SetState(TurnState.WaitingForPlayer);
 
+        // 플레이어 턴 복귀 시 항상 원본 moveRange로 리셋
         movesRemaining = maxMoves;
         OnMovesRemainingChanged?.Invoke(movesRemaining, maxMoves);
     }
