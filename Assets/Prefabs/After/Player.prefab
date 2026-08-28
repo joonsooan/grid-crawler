@@ -105,4 +105,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   playerData: {fileID: 11400000, guid: 3ce71d981dea2bf458533c9fef23d09b, type: 2}
+  moveTweenDuration: 0.15
   moveCooldown: 0.1

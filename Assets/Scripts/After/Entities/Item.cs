@@ -1,8 +1,12 @@
+using DG.Tweening;
 using UnityEngine;
 
 public class Item : MonoBehaviour, IInteractable
 {
     [SerializeField] private ItemDataSO itemData;
+    [SerializeField] private float hoverHeight = 0.15f;
+    [SerializeField] private float hoverDuration = 0.8f;
+    [SerializeField] private float spawnPopDuration = 0.3f;
 
     public bool isOpened = false;
 
@@ -13,11 +17,30 @@ public class Item : MonoBehaviour, IInteractable
         GridPos = GridUtils.WorldToGrid(transform.position);
         GridMapManager.Instance.RegisterItem(GridPos, this);
         transform.position = GridUtils.GridToWorld(GridPos, 0f);
+
+        PlaySpawnPop();
     }
 
     private void OnDestroy()
     {
         GridMapManager.Instance.UnregisterItem(GridPos);
+        transform.DOKill();
+    }
+
+    private void PlaySpawnPop()
+    {
+        Vector3 targetScale = transform.localScale;
+        transform.localScale = Vector3.zero;
+        transform.DOScale(targetScale, spawnPopDuration)
+            .SetEase(Ease.OutBack)
+            .OnComplete(PlayHoverLoop);
+    }
+
+    private void PlayHoverLoop()
+    {
+        transform.DOMoveY(transform.position.y + hoverHeight, hoverDuration)
+            .SetEase(Ease.InOutSine)
+            .SetLoops(-1, LoopType.Yoyo);
     }
 
     public void Interact(GameObject interactor)
