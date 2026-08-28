@@ -40,18 +40,17 @@ public class Enemy : MonoBehaviour, IGridEntity, IDamageable, ITurnActor
     {
         List<Vector2Int> path = ChaseAI.FindPath(GridPos, PlayerController.Instance.GridPos, enemyData.moveRange, out bool reachedAdjacent);
 
-        int totalSteps = path.Count;
-        int stepsRemaining = totalSteps;
-        onMovesRemainingChanged?.Invoke(stepsRemaining, totalSteps);
+        int stepsRemaining = path.Count;
+        onMovesRemainingChanged?.Invoke(stepsRemaining, enemyData.moveRange);
 
         foreach (Vector2Int step in path)
         {
+            yield return new WaitForSeconds(stepInterval);
+
             ((IGridEntity)this).MoveOnGrid(step);
             transform.position = GridUtils.GridToWorld(GridPos, 0f);
             stepsRemaining--;
-            onMovesRemainingChanged?.Invoke(stepsRemaining, totalSteps);
-
-            yield return new WaitForSeconds(stepInterval);
+            onMovesRemainingChanged?.Invoke(stepsRemaining, enemyData.moveRange);
         }
 
         if (reachedAdjacent) AttackPlayer();
