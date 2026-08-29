@@ -61,13 +61,21 @@ public class PlayerController : MonoBehaviour, IGridEntity, IDamageable, IHealth
     // TurnManager가 WaitingForPlayer 상태일 때만 WASD 입력을 받아 플레이어를 한 칸 이동
     private void Update()
     {
-        if (Time.time - lastMoveTime < moveCooldown) return;
         if (TurnManager.Instance.CurrentState != TurnState.WaitingForPlayer) return;
+
+        if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
+        {
+            TurnManager.Instance.EndPlayerTurnImmediately();
+            return;
+        }
+
+        if (Time.time - lastMoveTime < moveCooldown) return;
 
         Vector2Int dir = GetInputDirection();
         if (dir == Vector2Int.zero) return;
 
         lastMoveTime = Time.time;
+        UpdateFacing(dir);
         TurnManager.Instance.OnPlayerActionStarted(moveRange);
         TryMove(dir);
     }
@@ -82,6 +90,12 @@ public class PlayerController : MonoBehaviour, IGridEntity, IDamageable, IHealth
         if (Keyboard.current.dKey.isPressed) return Vector2Int.right;
 
         return Vector2Int.zero;
+    }
+
+    private void UpdateFacing(Vector2Int dir)
+    {
+        if (spriteRenderer == null || dir.x == 0) return;
+        spriteRenderer.flipX = dir.x < 0;
     }
 
     private void TryMove(Vector2Int dir)
