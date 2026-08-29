@@ -23,6 +23,7 @@ public class Enemy : MonoBehaviour, IGridEntity, IDamageable, IHealthBarSource, 
     public int MaxHp => enemyData.maxHp;
 
     public event Action<int, int> OnHealthChanged;
+    public static event Action OnAllEnemiesDefeated;
 
     private void Awake()
     {
@@ -79,6 +80,17 @@ public class Enemy : MonoBehaviour, IGridEntity, IDamageable, IHealthBarSource, 
 
         HealthBarPool.Instance.Return(healthBar);
         Destroy(gameObject);
+
+        bool anyEnemiesLeft = false;
+        foreach (MonoBehaviour entity in GridMapManager.Instance.GetAllEntities())
+        {
+            if (entity != this && entity is Enemy)
+            {
+                anyEnemiesLeft = true;
+                break;
+            }
+        }
+        if (!anyEnemiesLeft) OnAllEnemiesDefeated?.Invoke();
     }
 
     private void PlayHitReaction()
@@ -88,6 +100,12 @@ public class Enemy : MonoBehaviour, IGridEntity, IDamageable, IHealthBarSource, 
         if (spriteRenderer == null) return;
         spriteRenderer.DOColor(Color.red, 0.05f)
             .OnComplete(() => spriteRenderer.DOColor(Color.white, hitShakeDuration - 0.05f));
+    }
+
+    private void UpdateFacing()
+    {
+        if (spriteRenderer == null) return;
+        spriteRenderer.flipX = PlayerController.Instance.GridPos.x < GridPos.x;
     }
 
     // 계산한 경로를 한 칸씩 이동, 플레이어와 인접해졌다면 공격
@@ -100,6 +118,7 @@ public class Enemy : MonoBehaviour, IGridEntity, IDamageable, IHealthBarSource, 
 
         foreach (Vector2Int step in path)
         {
+            UpdateFacing();
             ((IGridEntity)this).MoveOnGrid(step);
 
             Vector3 targetWorldPos = GridUtils.GridToWorld(GridPos, 0f);
@@ -118,6 +137,7 @@ public class Enemy : MonoBehaviour, IGridEntity, IDamageable, IHealthBarSource, 
     {
         if (!GridUtils.IsAdjacent(GridPos, PlayerController.Instance.GridPos)) yield break;
 
+        UpdateFacing();
         PlayerController.Instance.TakeDamage(enemyData.attackPower);
         Debug.Log($"{enemyData.enemyName}이(가) {PlayerController.Instance.PlayerName}을(를) 공격, 데미지: {enemyData.attackPower}");
 
