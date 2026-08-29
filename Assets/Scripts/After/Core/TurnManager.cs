@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public enum TurnState { WaitingForPlayer, ProcessingPlayerTurn, ProcessingEnemyTurn, TurnResolve }
 public enum PlayerActionResult { Blocked, Moved, TurnEnd }
@@ -34,6 +36,14 @@ public class TurnManager : MonoBehaviour
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
+    }
+
+    private void Update()
+    {
+        if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        }
     }
 
     public void InitializePlayerMoves(int moveRange)
@@ -83,6 +93,15 @@ public class TurnManager : MonoBehaviour
                 return;
             }
         }
+
+        movesRemaining = 0;
+        OnMovesRemainingChanged?.Invoke(movesRemaining, maxMoves);
+        OnPlayerActionCompleted();
+    }
+
+    public void EndPlayerTurnImmediately()
+    {
+        if (CurrentState != TurnState.WaitingForPlayer) return;
 
         movesRemaining = 0;
         OnMovesRemainingChanged?.Invoke(movesRemaining, maxMoves);
