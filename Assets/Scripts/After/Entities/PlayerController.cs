@@ -4,7 +4,7 @@ using DG.Tweening;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class PlayerController : MonoBehaviour, IGridEntity, IDamageable
+public class PlayerController : MonoBehaviour, IGridEntity, IDamageable, IHealthBarSource
 {
     public static PlayerController Instance { get; private set; }
 
@@ -21,6 +21,7 @@ public class PlayerController : MonoBehaviour, IGridEntity, IDamageable
     public int MoveRange => moveRange;
     public int CurrentHp => hp;
     public int MaxHp => playerData.maxHp;
+    public Transform HealthBarAnchor => transform;
 
     public event Action<int, int> OnHealthChanged;
     public event Action OnPlayerDied;
@@ -28,7 +29,9 @@ public class PlayerController : MonoBehaviour, IGridEntity, IDamageable
     private int hp;
     private int moveRange;
     private float lastMoveTime;
+    private bool isDead;
     private SpriteRenderer spriteRenderer;
+    private HealthBarUI healthBar;
 
     private void Awake()
     {
@@ -46,6 +49,7 @@ public class PlayerController : MonoBehaviour, IGridEntity, IDamageable
         ((IGridEntity)this).RegisterToGrid(transform.position);
         transform.position = GridUtils.GridToWorld(GridPos, 0f);
         TurnManager.Instance.InitializePlayerMoves(moveRange);
+        healthBar = HealthBarPool.Instance.Rent(this);
         OnHealthChanged?.Invoke(hp, playerData.maxHp);
     }
 
@@ -131,7 +135,7 @@ public class PlayerController : MonoBehaviour, IGridEntity, IDamageable
     {
         Vector3 punch = (targetWorldPos - transform.position).normalized * 0.3f;
         transform.DOPunchPosition(punch, attackPunchDuration, vibrato: 6, elasticity: 0.5f)
-            .OnComplete(() => TurnManager.Instance.ResolvePlayerAction(PlayerActionResult.TurnEnd));
+            .OnComplete(() => TurnManager.Instance.ResolvePlayerAction(PlayerActionResult.Moved));
     }
 
     private void PlayBlockedBump(Vector2Int dir)
@@ -168,6 +172,8 @@ public class PlayerController : MonoBehaviour, IGridEntity, IDamageable
 
     public void TakeDamage(int damageAmount)
     {
+        if (isDead) return;
+
         hp = Mathf.Max(hp - damageAmount, 0);
         Debug.Log($"{playerData.playerName} 남은 체력: {hp}");
         OnHealthChanged?.Invoke(hp, playerData.maxHp);
@@ -176,6 +182,7 @@ public class PlayerController : MonoBehaviour, IGridEntity, IDamageable
         if (hp <= 0)
         {
             Debug.Log($"{playerData.playerName} 사망");
+            isDead = true;
             StartCoroutine(DieAfterHitReaction());
         }
     }
@@ -189,6 +196,7 @@ public class PlayerController : MonoBehaviour, IGridEntity, IDamageable
         if (spriteRenderer != null) deathSequence.Join(spriteRenderer.DOFade(0f, deathDuration));
         yield return deathSequence.WaitForCompletion();
 
+        HealthBarPool.Instance.Return(healthBar);
         OnPlayerDied?.Invoke();
     }
 }
