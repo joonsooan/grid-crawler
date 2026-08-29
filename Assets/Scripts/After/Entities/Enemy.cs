@@ -10,6 +10,7 @@ public class Enemy : MonoBehaviour, IGridEntity, IDamageable, ITurnActor
     [SerializeField] private float attackPunchDuration = 0.3f;
     [SerializeField] private float hitShakeDuration = 0.3f;
     [SerializeField] private float deathDuration = 0.25f;
+    [SerializeField] private float spawnPopDuration = 0.3f;
 
     private int hp;
     private SpriteRenderer spriteRenderer;
@@ -26,6 +27,15 @@ public class Enemy : MonoBehaviour, IGridEntity, IDamageable, ITurnActor
         hp = enemyData.maxHp;
         ((IGridEntity)this).RegisterToGrid(transform.position);
         transform.position = GridUtils.GridToWorld(GridPos, 0f);
+
+        PlaySpawnPop();
+    }
+
+    private void PlaySpawnPop()
+    {
+        Vector3 targetScale = transform.localScale;
+        transform.localScale = Vector3.zero;
+        transform.DOScale(targetScale, spawnPopDuration).SetEase(Ease.OutBack);
     }
 
     private void OnDestroy()
