@@ -18,6 +18,7 @@ public class TurnManager : MonoBehaviour
 
     public event Action<TurnState> OnTurnStateChanged;
     public event Action<int, int> OnMovesRemainingChanged;
+    public event Action OnMovesIncreasedByItem;
 
     public int MovesRemaining => movesRemaining;
     public int MaxMoves => maxMoves;
@@ -44,6 +45,7 @@ public class TurnManager : MonoBehaviour
     {
         movesRemaining = Mathf.Min(movesRemaining + amount, maxMoves);
         OnMovesRemainingChanged?.Invoke(movesRemaining, maxMoves);
+        OnMovesIncreasedByItem?.Invoke();
     }
 
     // 플레이어 입력 시점에 호출

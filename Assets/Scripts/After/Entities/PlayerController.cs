@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -12,6 +13,7 @@ public class PlayerController : MonoBehaviour, IGridEntity, IDamageable
     [SerializeField] private float attackPunchDuration = 0.3f;
     [SerializeField] private float hitShakeDuration = 0.3f;
     [SerializeField] private float wallBumpDuration = 0.2f;
+    [SerializeField] private float deathDuration = 0.25f;
     public float moveCooldown = 0.1f;
 
     public Vector2Int GridPos { get; set; }
@@ -21,6 +23,7 @@ public class PlayerController : MonoBehaviour, IGridEntity, IDamageable
     public int MaxHp => playerData.maxHp;
 
     public event Action<int, int> OnHealthChanged;
+    public event Action OnPlayerDied;
 
     private int hp;
     private int moveRange;
@@ -165,7 +168,7 @@ public class PlayerController : MonoBehaviour, IGridEntity, IDamageable
 
     public void TakeDamage(int damageAmount)
     {
-        hp -= damageAmount;
+        hp = Mathf.Max(hp - damageAmount, 0);
         Debug.Log($"{playerData.playerName} 남은 체력: {hp}");
         OnHealthChanged?.Invoke(hp, playerData.maxHp);
         PlayHitReaction();
@@ -173,6 +176,19 @@ public class PlayerController : MonoBehaviour, IGridEntity, IDamageable
         if (hp <= 0)
         {
             Debug.Log($"{playerData.playerName} 사망");
+            StartCoroutine(DieAfterHitReaction());
         }
+    }
+
+    private IEnumerator DieAfterHitReaction()
+    {
+        yield return new WaitForSeconds(hitShakeDuration);
+
+        Sequence deathSequence = DOTween.Sequence();
+        deathSequence.Join(transform.DOScale(Vector3.zero, deathDuration).SetEase(Ease.InBack));
+        if (spriteRenderer != null) deathSequence.Join(spriteRenderer.DOFade(0f, deathDuration));
+        yield return deathSequence.WaitForCompletion();
+
+        OnPlayerDied?.Invoke();
     }
 }
