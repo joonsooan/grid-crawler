@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
 
-public class Enemy : MonoBehaviour, IGridEntity, IDamageable, ITurnActor
+public class Enemy : MonoBehaviour, IGridEntity, IDamageable, IHealthBarSource, ITurnActor
 {
     [SerializeField] private EnemyDataSO enemyData;
     [SerializeField] private float attackPunchDuration = 0.3f;
@@ -13,9 +13,16 @@ public class Enemy : MonoBehaviour, IGridEntity, IDamageable, ITurnActor
     [SerializeField] private float spawnPopDuration = 0.3f;
 
     private int hp;
+    private bool isDead;
     private SpriteRenderer spriteRenderer;
+    private HealthBarUI healthBar;
 
     public Vector2Int GridPos { get; set; }
+    public Transform HealthBarAnchor => transform;
+    public int CurrentHp => hp;
+    public int MaxHp => enemyData.maxHp;
+
+    public event Action<int, int> OnHealthChanged;
 
     private void Awake()
     {
@@ -27,6 +34,7 @@ public class Enemy : MonoBehaviour, IGridEntity, IDamageable, ITurnActor
         hp = enemyData.maxHp;
         ((IGridEntity)this).RegisterToGrid(transform.position);
         transform.position = GridUtils.GridToWorld(GridPos, 0f);
+        healthBar = HealthBarPool.Instance.Rent(this);
 
         PlaySpawnPop();
     }
@@ -45,13 +53,17 @@ public class Enemy : MonoBehaviour, IGridEntity, IDamageable, ITurnActor
 
     public void TakeDamage(int damageAmount)
     {
+        if (isDead) return;
+
         hp -= damageAmount;
         Debug.Log($"{enemyData.enemyName} 피격, 남은 체력: {hp}");
+        OnHealthChanged?.Invoke(hp, enemyData.maxHp);
         PlayHitReaction();
 
         if (hp <= 0)
         {
             Debug.Log($"{enemyData.enemyName} 사망");
+            isDead = true;
             StartCoroutine(DieAfterHitReaction());
         }
     }
@@ -65,6 +77,7 @@ public class Enemy : MonoBehaviour, IGridEntity, IDamageable, ITurnActor
         if (spriteRenderer != null) deathSequence.Join(spriteRenderer.DOFade(0f, deathDuration));
         yield return deathSequence.WaitForCompletion();
 
+        HealthBarPool.Instance.Return(healthBar);
         Destroy(gameObject);
     }
 

@@ -19,6 +19,8 @@ public class TurnManager : MonoBehaviour
     public event Action<TurnState> OnTurnStateChanged;
     public event Action<int, int> OnMovesRemainingChanged;
     public event Action OnMovesIncreasedByItem;
+    public event Action<MonoBehaviour> OnEnemyTurnStarted;
+    public event Action OnEnemyTurnEnded;
 
     public int MovesRemaining => movesRemaining;
     public int MaxMoves => maxMoves;
@@ -106,11 +108,13 @@ public class TurnManager : MonoBehaviour
 
             if (entity != null && entity is ITurnActor actor)
             {
+                OnEnemyTurnStarted?.Invoke(entity);
                 yield return StartCoroutine(actor.ExecuteTurnCoroutine(enemyStepInterval, RelayMovesRemaining));
                 yield return new WaitForSeconds(enemyToEnemyDelay);
             }
         }
 
+        OnEnemyTurnEnded?.Invoke();
         OnMovesRemainingChanged?.Invoke(TransitionMoves, TransitionMoves);
         yield return new WaitForSeconds(turnTransitionDelay);
 
