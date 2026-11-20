@@ -12,6 +12,8 @@ public class PlayerController : MonoBehaviour, IGridEntity, IDamageable
     public Vector2Int GridPos { get; set; }
     public string PlayerName => playerData.playerName;
     public int MoveRange => moveRange;
+    public int CurrentHp => hp;
+    public int MaxHp => playerData.maxHp;
 
     public event Action<int, int> OnHealthChanged;
 
